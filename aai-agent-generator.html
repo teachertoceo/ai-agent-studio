@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Agent Studio — Build Your AI Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0f14; --surface: #161921; --surface2: #1e2230;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+    --text: #f0f2f7; --text2: #8b93a8; --text3: #555e72;
+    --accent: #4f8ef7; --accent-bg: rgba(79,142,247,0.12); --accent-text: #7eb3ff;
+    --accent2: #a78bfa; --accent2-bg: rgba(167,139,250,0.12); --accent2-text: #c4b0ff;
+    --success: #27c98f; --success-bg: rgba(39,201,143,0.12); --success-text: #5de0b0;
+    --warn: #f5a623; --warn-bg: rgba(245,166,35,0.12); --warn-text: #f5c96a;
+    --pink: #e05ff0; --pink-bg: rgba(224,95,240,0.12); --pink-text: #e89ff5;
+    --coral: #f07060; --coral-bg: rgba(240,112,96,0.12); --coral-text: #f5a898;
+    --radius: 12px; --radius-lg: 18px;
+  }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; color: var(--text); cursor: pointer; letter-spacing: -0.3px; }
+  .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .topbar-tag { font-size: 12px; padding: 4px 12px; border-radius: 999px; background: var(--accent-bg); color: var(--accent-text); font-weight: 500; }
+  .topbar-nav-btn { font-size: 13px; padding: 6px 14px; border-radius: var(--radius); border: 1px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: 'Nunito', sans-serif; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+  .topbar-nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .topbar-nav-btn.active { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); }
+  .saved-badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; background: var(--success-bg); color: var(--success-text); font-weight: 500; display: none; align-items: center; gap: 5px; }
+  .saved-badge.show { display: flex; }
+
+  .page { display: none; } .page.on { display: block; }
+  .main { max-width: 780px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .hero { text-align: center; margin-bottom: 2.5rem; animation: fadeUp 0.5s ease both; }
+  .hero h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 10px; line-height: 1.2; }
+  .hero h1 span { color: var(--accent-text); }
+  .hero p { font-size: 15px; color: var(--text2); max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+  /* GALLERY */
+  .gallery-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; animation: fadeUp 0.4s ease both; flex-wrap: wrap; gap: 10px; }
+  .gallery-header h2 { font-size: 20px; font-weight: 600; }
+  .gallery-header p { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+  .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.4s ease both; transition: border-color 0.15s; }
+  .agent-card:hover { border-color: var(--border2); }
+  .agent-avatar-lg { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .agent-card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .agent-card-type { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .agent-card-meta { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 5px; }
+  .agent-card-platform { display: inline-flex; align-items: center; gap: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; font-size: 11px; color: var(--text2); }
+  .agent-card-actions { display: flex; gap: 6px; margin-top: 4px; }
+  .agent-card-actions .btn-xs { flex: 1; justify-content: center; }
+  .voice-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--coral-bg); border: 1px solid var(--coral); border-radius: 999px; padding: 3px 10px; font-size: 11px; color: var(--coral-text); }
+  .empty-state { text-align: center; padding: 4rem 2rem; animation: fadeUp 0.4s ease both; }
+  .empty-icon { font-size: 48px; color: var(--text3); margin-bottom: 1rem; }
+  .empty-state h3 { font-size: 18px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: var(--text3); margin-bottom: 1.5rem; line-height: 1.6; }
+
+  /* PROGRESS — now 4 steps */
+  .progress { display: flex; align-items: center; margin-bottom: 2rem; animation: fadeUp 0.5s 0.1s ease both; }
+  .pdot { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); transition: color 0.2s; flex-shrink: 0; }
+  .pdot .n { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; background: var(--surface); color: var(--text3); transition: all 0.2s; flex-shrink: 0; }
+  .pdot.active { color: var(--text); } .pdot.active .n { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pdot.done .n { background: var(--success-bg); border-color: var(--success); color: var(--success); } .pdot.done { color: var(--text2); }
+  .pline { flex: 1; height: 1px; background: var(--border); margin: 0 6px; min-width: 8px; }
+
+  /* CARD */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; animation: fadeUp 0.4s ease both; }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .card-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.5; }
+
+  /* TEMPLATES */
+  .tmpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .tmpl { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; cursor: pointer; transition: all 0.15s; }
+  .tmpl:hover { border-color: var(--border2); background: #222638; }
+  .tmpl.picked { border-color: var(--accent); background: var(--accent-bg); }
+  .tmpl .ti { font-size: 20px; color: var(--text3); margin-bottom: 8px; display: block; }
+  .tmpl.picked .ti { color: var(--accent-text); }
+  .tmpl h3 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .tmpl p { font-size: 12px; color: var(--text2); line-height: 1.45; }
+  .tmpl.picked h3 { color: var(--accent-text); }
+
+  /* FORM */
+  .field { margin-bottom: 1.25rem; }
+  .field label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+  .field label span { font-weight: 400; color: var(--text3); }
+  .field input, .field select, .field textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; padding: 10px 14px; outline: none; transition: border-color 0.15s; }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text3); }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+  .field select option { background: var(--surface2); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* CHIPS */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .chip { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; transition: all 0.15s; background: var(--surface2); color: var(--text2); font-family: 'Nunito', sans-serif; }
+  .chip:hover { border-color: var(--border2); color: var(--text); }
+  .chip.on { background: var(--success-bg); color: var(--success-text); border-color: var(--success); }
+
+  /* AVATAR PICKER */
+  .avatar-section { margin-bottom: 1.5rem; }
+  .avatar-section-label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 10px; display: block; }
+  .avatar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
+  .avatar-opt { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 6px; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .avatar-opt:hover { border-color: var(--border2); background: #222638; }
+  .avatar-opt.picked { border-color: var(--coral); background: var(--coral-bg); }
+  .avatar-opt .av-emoji { font-size: 28px; display: block; margin-bottom: 4px; }
+  .avatar-opt .av-label { font-size: 10px; color: var(--text3); }
+  .avatar-opt.picked .av-label { color: var(--coral-text); }
+
+  /* VOICE PICKER */
+  .voice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 6px; }
+  .voice-opt { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: all 0.15s; }
+  .voice-opt:hover { border-color: var(--border2); }
+  .voice-opt.picked { border-color: var(--pink); background: var(--pink-bg); }
+  .voice-opt h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+  .voice-opt p { font-size: 11px; color: var(--text3); line-height: 1.4; }
+  .voice-opt.picked h4 { color: var(--pink-text); }
+  .voice-opt.picked p { color: var(--pink-text); opacity: 0.7; }
+
+  /* PERSONA PREVIEW */
+  .persona-preview { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 1.25rem; margin-top: 1rem; display: flex; align-items: center; gap: 14px; }
+  .preview-avatar { font-size: 36px; width: 60px; height: 60px; background: var(--surface); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border); }
+  .preview-info h3 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .preview-info p { font-size: 12px; color: var(--text2); line-height: 1.5; font-style: italic; }
+  .preview-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .preview-badge { font-size: 11px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text3); background: var(--surface); }
+
+  /* BUTTONS */
+  .actions { display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap; align-items: center; }
+  .btn { padding: 11px 22px; border-radius: var(--radius); border: none; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.15s; display: inline-flex; align-items: center; gap: 7px; }
+  .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); } .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-save { background: var(--warn-bg); border: 1px solid var(--warn); color: var(--warn-text); } .btn-save:hover { opacity: 0.85; }
+  .btn-dl { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); } .btn-dl:hover { border-color: var(--border2); color: var(--text); }
+  .btn-email { background: var(--pink-bg); border: 1px solid var(--pink); color: var(--pink-text); } .btn-email:hover { opacity: 0.85; }
+  .btn-xs { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+  .btn-xs:hover { background: var(--surface2); color: var(--text); }
+  .btn-xs.danger:hover { background: rgba(226,75,74,0.12); color: #f09595; border-color: rgba(226,75,74,0.3); }
+  .btn-xs.accent { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); }
+  .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+  /* RESULT */
+  .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .result-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+  .copy-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: 'Nunito', sans-serif; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+  .copy-btn:hover { background: var(--surface2); color: var(--text); }
+  .result-text { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; font-family: 'DM Mono', monospace; font-size: 12.5px; line-height: 1.8; color: var(--text2); white-space: pre-wrap; max-height: 360px; overflow-y: auto; }
+  .badge-success { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; background: var(--success-bg); color: var(--success-text); font-size: 12px; font-weight: 500; margin-bottom: 14px; }
+
+  /* EMAIL PANEL */
+  .email-panel { background: var(--surface2); border: 1px solid var(--pink); border-radius: var(--radius-lg); padding: 1.25rem; margin-top: 1rem; animation: fadeUp 0.3s ease both; }
+  .email-panel h3 { font-size: 14px; font-weight: 600; color: var(--pink-text); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .email-panel p { font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+  .email-row { display: flex; gap: 8px; }
+  .email-row input { flex: 1; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; padding: 10px 14px; outline: none; transition: border-color 0.15s; }
+  .email-row input::placeholder { color: var(--text3); }
+  .email-row input:focus { border-color: var(--pink); }
+  .email-name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .email-name-row input { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; padding: 10px 14px; outline: none; transition: border-color 0.15s; }
+  .email-name-row input::placeholder { color: var(--text3); }
+  .email-name-row input:focus { border-color: var(--pink); }
+  .email-sent { display: none; text-align: center; padding: 1rem; }
+  .email-sent.show { display: block; }
+  .email-sent-icon { font-size: 32px; color: var(--success); margin-bottom: 8px; }
+  .email-sent h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .email-sent p { font-size: 13px; color: var(--text2); }
+
+  .screen { display: none; } .screen.on { display: block; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 20px; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; transition: transform 0.3s ease; z-index: 100; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--success); color: var(--success-text); }
+  .welcome-banner { background: var(--accent-bg); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: 1.5rem 1.75rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; animation: fadeUp 0.5s ease both; }
+  .welcome-banner-left h2 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .welcome-banner-left p { font-size: 13px; color: var(--text2); line-height: 1.5; max-width: 460px; }
+  .welcome-avatar { font-size: 36px; flex-shrink: 0; }
+  /* CONTACT BUTTON */
+  .btn-contact { background: var(--accent-bg); border: 1px solid var(--accent); color: var(--accent-text); }
+  .btn-contact:hover { opacity: 0.85; }
+  /* FOOTER */
+  .footer { text-align: center; padding: 2.5rem 1rem; font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); }
+  .footer strong { color: var(--accent-text); }
+  .footer a { color: var(--accent2-text); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+  .footer-contact { margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .footer-contact-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent-bg); color: var(--accent-text); font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Nunito', sans-serif; text-decoration: none; transition: all 0.15s; }
+  .footer-contact-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 999px; }
+
+  /* PASSWORD SCREEN */
+  .lock-screen { position: fixed; inset: 0; background: var(--bg); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+  .lock-card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 2.5rem 2rem; max-width: 400px; width: 100%; text-align: center; animation: fadeUp 0.5s ease both; }
+  .lock-icon { width: 64px; height: 64px; background: var(--accent-bg); border: 1px solid var(--accent); border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
+  .lock-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -0.3px; }
+  .lock-sub { font-size: 14px; color: var(--text2); margin-bottom: 1.75rem; line-height: 1.6; }
+  .lock-input-wrap { position: relative; margin-bottom: 12px; }
+  .lock-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 16px; padding: 12px 48px 12px 16px; outline: none; transition: border-color 0.15s; letter-spacing: 2px; text-align: center; }
+  .lock-input::placeholder { letter-spacing: 0; color: var(--text3); }
+  .lock-input:focus { border-color: var(--accent); }
+  .lock-input.error { border-color: #f07060; animation: shake 0.4s ease; }
+  .lock-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; }
+  .lock-btn { width: 100%; padding: 13px; border-radius: var(--radius); border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.15s; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .lock-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .lock-error { font-size: 13px; color: #f07060; min-height: 20px; margin-bottom: 4px; }
+  .lock-hint { font-size: 12px; color: var(--text3); line-height: 1.5; }
+  .lock-hint strong { color: var(--text2); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+  @media (max-width: 560px) {
+    .two { grid-template-columns: 1fr; } .tmpl-grid { grid-template-columns: 1fr 1fr; }
+    .hero h1 { font-size: 24px; } .pdot span { display: none; }
+    .gallery-grid { grid-template-columns: 1fr; } .topbar-nav-btn span { display: none; }
+    .email-name-row { grid-template-columns: 1fr; } .email-row { flex-direction: column; }
+    .voice-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD LOCK SCREEN -->
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-icon">
+      <i class="ti ti-school" style="font-size:28px;color:var(--accent-text)"></i>
+    </div>
+    <div class="lock-title">AI Agent Studio</div>
+    <div class="lock-sub">This is an exclusive tool for clients of <strong style="color:var(--text)">AI Agent Studio</strong>.<br/>Enter your password to get started.</div>
+    <div class="lock-input-wrap">
+      <input class="lock-input" type="password" id="lock-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPassword()" oninput="document.getElementById('lock-error').textContent='';this.classList.remove('error')" />
+      <button class="lock-toggle" onclick="toggleLockVisibility()" id="lock-toggle-btn"><i class="ti ti-eye" id="lock-eye-icon"></i></button>
+    </div>
+    <div class="lock-error" id="lock-error"></div>
+    <button class="lock-btn" onclick="checkPassword()">
+      <i class="ti ti-lock-open"></i> Enter Studio
+    </button>
+    <div class="lock-hint">
+      Don't have a password? <strong>Work with AI Agent Studio</strong> to get access.<br/>
+      <a onclick="document.getElementById('lock-screen').style.display='none'; showContact(); document.getElementById('lock-screen').style.display='flex';" style="color:var(--accent-text);cursor:pointer;text-decoration:underline">Contact us here</a>
+    </div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo" onclick="showPage('builder')">
+    <div class="logo-icon"><i class="ti ti-school" style="font-size:18px;color:#fff"></i></div>
+    AI Agent Studio
+  </div>
+  <div class="topbar-right">
+    <div class="saved-badge" id="saved-badge"><i class="ti ti-device-floppy" style="font-size:13px"></i> Saved</div>
+    <button class="topbar-nav-btn" id="nav-builder" onclick="showPage('builder')"><i class="ti ti-plus"></i> <span>New agent</span></button>
+    <button class="topbar-nav-btn" id="nav-gallery" onclick="showPage('gallery')"><i class="ti ti-layout-grid"></i> <span>My agents</span> <span id="agent-count-badge" style="background:var(--accent);color:#fff;border-radius:999px;padding:1px 7px;font-size:11px;display:none"></span></button>
+    <button class="topbar-nav-btn btn-contact" onclick="showContact()"><i class="ti ti-message-circle"></i> <span>Work with me</span></button>
+  </div>
+</div>
+
+<!-- GALLERY PAGE -->
+<div class="page" id="page-gallery">
+  <div class="main">
+    <div class="gallery-header">
+      <div><h2>My agents</h2><p>All the AI agents you have built — view, edit, or delete any of them.</p></div>
+      <button class="btn btn-primary" onclick="showPage('builder'); resetBuilder();"><i class="ti ti-plus"></i> Build new agent</button>
+    </div>
+    <div id="gallery-content"></div>
+  </div>
+  <div class="footer">
+    <strong>AI Agent Studio</strong> — helping coaches &amp; consultants build AI agents with ease.<br/>
+    <div class="footer-contact">
+      <span style="color:var(--text3)">Built something great? Want a custom agent?</span>
+      <a class="footer-contact-btn" onclick="showContact()"><i class="ti ti-message-circle" style="font-size:14px"></i> Work with me</a>
+    </div>
+    <div style="margin-top:14px;display:flex;justify-content:center;gap:20px;flex-wrap:wrap">
+      <a onclick="showLegal('disclaimer')" style="font-size:12px;color:var(--text3);cursor:pointer;transition:color 0.15s" onmouseover="this.style.color='var(--accent-text)'" onmouseout="this.style.color='var(--text3)'">Disclaimer</a>
+      <a onclick="showLegal('terms')" style="font-size:12px;color:var(--text3);cursor:pointer;transition:color 0.15s" onmouseover="this.style.color='var(--accent-text)'" onmouseout="this.style.color='var(--text3)'">Terms of Use</a>
+      <a onclick="showLegal('privacy')" style="font-size:12px;color:var(--text3);cursor:pointer;transition:color 0.15s" onmouseover="this.style.color='var(--accent-text)'" onmouseout="this.style.color='var(--text3)'">Privacy Policy</a>
+      <span style="font-size:12px;color:var(--text3)">&copy; 2025 AI Agent Studio. All rights reserved.</span>
+    </div>
+  </div>
+</div>
+<div class="page on" id="page-builder">
+  <div class="main">
+
+    <div class="welcome-banner">
+      <div class="welcome-banner-left">
+        <h2>👋 Welcome to AI Agent Studio!</h2>
+        <p>I help coaches and consultants like you build powerful AI agents — no tech skills needed. Follow the steps below and you'll have your very own AI agent in minutes. Need help? Hit <strong>Work with me</strong> above!</p>
+      </div>
+      <div class="welcome-avatar" style="width:52px;height:52px;background:var(--accent-bg);border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid var(--accent)"><i class="ti ti-school" style="font-size:26px;color:var(--accent-text)"></i></div>
+    </div>
+
+    <div class="hero">
+      <h1>Build your <span>AI Agent</span> in minutes</h1>
+      <p>Pick a template, fill in details, give it a face and voice, then get your prompt — ready to use anywhere.</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:1rem;flex-wrap:wrap">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:999px;padding:6px 14px;font-size:12px;color:var(--text2)">
+          <i class="ti ti-sparkles" style="font-size:14px;color:var(--accent-text)"></i>
+          Powered by <strong style="color:var(--text)">Claude</strong> &amp; <strong style="color:var(--text)">ChatGPT</strong>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:999px;padding:6px 14px;font-size:12px;color:var(--text2)">
+          <i class="ti ti-shield-check" style="font-size:14px;color:var(--success-text)"></i>
+          100% transparent &amp; honest
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:999px;padding:6px 14px;font-size:12px;color:var(--text2)">
+          <i class="ti ti-lock" style="font-size:14px;color:var(--accent2-text)"></i>
+          Your data stays private
+        </div>
+      </div>
+    </div>
+
+    <!-- 4-STEP PROGRESS -->
+    <div class="progress">
+      <div class="pdot active" id="dot1"><div class="n">1</div><span>Template</span></div>
+      <div class="pline"></div>
+      <div class="pdot" id="dot2"><div class="n">2</div><span>Customize</span></div>
+      <div class="pline"></div>
+      <div class="pdot" id="dot3"><div class="n">3</div><span>Face &amp; Voice</span></div>
+      <div class="pline"></div>
+      <div class="pdot" id="dot4"><div class="n">4</div><span>Your result</span></div>
+    </div>
+
+    <!-- STEP 1: TEMPLATE -->
+    <div class="screen on" id="s1">
+      <div class="card">
+        <div class="card-title">What kind of AI agent do you want?</div>
+        <div class="card-sub">Choose the one that best fits what you have in mind.</div>
+        <div class="tmpl-grid">
+          <div class="tmpl" onclick="pickTemplate(this,'customer')"><i class="ti ti-headset"></i><h3>Customer support bot</h3><p>Answers questions and helps your customers 24/7</p></div>
+          <div class="tmpl" onclick="pickTemplate(this,'sales')"><i class="ti ti-chart-bar"></i><h3>Sales assistant</h3><p>Qualifies leads, answers pricing questions, books demos</p></div>
+          <div class="tmpl" onclick="pickTemplate(this,'twin')"><i class="ti ti-user-circle"></i><h3>AI Twin</h3><p>Talks and thinks like you — replies on your behalf</p></div>
+          <div class="tmpl" onclick="pickTemplate(this,'research')"><i class="ti ti-search"></i><h3>Research agent</h3><p>Finds information and delivers clear, useful summaries</p></div>
+          <div class="tmpl" onclick="pickTemplate(this,'coach')"><i class="ti ti-star"></i><h3>Coach / mentor</h3><p>Guides users through learning, habits, or personal goals</p></div>
+          <div class="tmpl" onclick="pickTemplate(this,'custom')"><i class="ti ti-plus"></i><h3>Custom agent</h3><p>Start from scratch — build exactly what you imagine</p></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="goStep(2)"><i class="ti ti-arrow-right"></i> Next — customize it</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: CUSTOMIZE -->
+    <div class="screen" id="s2">
+      <div class="card">
+        <div class="card-title">Tell us about your agent</div>
+        <div class="card-sub">Fill in as much or as little as you like. Plain English is perfect.</div>
+        <div class="field"><label>What is your agent's name?</label><input type="text" id="f-name" placeholder="e.g. Aria, Max, Luna, SupportBot" oninput="autoSaveDraft()" /></div>
+        <div class="field"><label>What is your business or brand called?</label><input type="text" id="f-brand" placeholder="e.g. Acme Shop, Dr. Smith's Clinic" oninput="autoSaveDraft()" /></div>
+        <div class="two">
+          <div class="field"><label>Who will this agent talk to?</label><input type="text" id="f-audience" placeholder="e.g. new customers, students" oninput="autoSaveDraft()" /></div>
+          <div class="field"><label>Where will it be used?</label>
+            <select id="f-platform" onchange="autoSaveDraft()">
+              <option>Website</option><option>WhatsApp</option><option>Instagram DMs</option><option>Email</option><option>Slack</option><option>Mobile app</option><option>Facebook Messenger</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>What should this agent be able to do? <span>(pick all that apply)</span></label>
+          <div class="chips" id="skills-chips">
+            <span class="chip" onclick="tog(this)">Answer questions</span><span class="chip" onclick="tog(this)">Book appointments</span><span class="chip" onclick="tog(this)">Give recommendations</span><span class="chip" onclick="tog(this)">Collect customer info</span><span class="chip" onclick="tog(this)">Send follow-ups</span><span class="chip" onclick="tog(this)">Handle complaints</span><span class="chip" onclick="tog(this)">Explain products / services</span><span class="chip" onclick="tog(this)">Escalate to a human</span><span class="chip" onclick="tog(this)">Write summaries or reports</span><span class="chip" onclick="tog(this)">Coach or guide users</span><span class="chip" onclick="tog(this)">Qualify leads</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>How should it sound?</label>
+          <div class="chips" id="tone-chips">
+            <span class="chip on" onclick="tog(this)">Friendly</span><span class="chip" onclick="tog(this)">Professional</span><span class="chip" onclick="tog(this)">Casual &amp; fun</span><span class="chip" onclick="tog(this)">Short &amp; direct</span><span class="chip" onclick="tog(this)">Warm &amp; caring</span><span class="chip" onclick="tog(this)">Confident</span><span class="chip" onclick="tog(this)">Formal</span>
+          </div>
+        </div>
+        <div class="field"><label>What should it NEVER do or say? <span>(optional)</span></label><input type="text" id="f-limits" placeholder="e.g. never promise refunds, never discuss competitors" oninput="autoSaveDraft()" /></div>
+        <div class="field"><label>Extra details about your business <span>(optional)</span></label><textarea id="f-extra" placeholder="e.g. We sell handmade candles. Shipping free over $50." oninput="autoSaveDraft()"></textarea></div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="goStep(3)"><i class="ti ti-arrow-right"></i> Next — give it a face &amp; voice</button>
+          <button class="btn btn-save" onclick="saveAgent()"><i class="ti ti-device-floppy"></i> Save progress</button>
+          <button class="btn btn-ghost" onclick="goStep(1)"><i class="ti ti-arrow-left"></i> Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: FACE & VOICE -->
+    <div class="screen" id="s3">
+      <div class="card">
+        <div class="card-title">Give your agent a face &amp; voice</div>
+        <div class="card-sub">This is totally optional — but it makes your agent feel real and memorable. Pick an avatar and a personality voice.</div>
+
+        <!-- AVATAR PICKER -->
+        <div class="avatar-section">
+          <span class="avatar-section-label"><i class="ti ti-mood-smile" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i> Choose a face (avatar)</span>
+          <div class="avatar-grid" id="avatar-grid">
+            <div class="avatar-opt picked" onclick="pickAvatar(this,'🤖','Robot')"><span class="av-emoji">🤖</span><span class="av-label">Robot</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'👩‍💼','Professional')"><span class="av-emoji">👩‍💼</span><span class="av-label">Professional</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'👨‍💼','Business')"><span class="av-emoji">👨‍💼</span><span class="av-label">Business</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🧑‍🎓','Expert')"><span class="av-emoji">🧑‍🎓</span><span class="av-label">Expert</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🧑‍⚕️','Helper')"><span class="av-emoji">🧑‍⚕️</span><span class="av-label">Helper</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🧑‍🍳','Creative')"><span class="av-emoji">🧑‍🍳</span><span class="av-label">Creative</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🦸','Hero')"><span class="av-emoji">🦸</span><span class="av-label">Hero</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🧙','Wizard')"><span class="av-emoji">🧙</span><span class="av-label">Wizard</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🐺','Wolf')"><span class="av-emoji">🐺</span><span class="av-label">Wolf</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🦊','Fox')"><span class="av-emoji">🦊</span><span class="av-label">Fox</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🦁','Lion')"><span class="av-emoji">🦁</span><span class="av-label">Lion</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'🚀','Rocket')"><span class="av-emoji">🚀</span><span class="av-label">Rocket</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'⚡','Energy')"><span class="av-emoji">⚡</span><span class="av-label">Energy</span></div>
+            <div class="avatar-opt" onclick="pickAvatar(this,'💎','Premium')"><span class="av-emoji">💎</span><span class="av-label">Premium</span></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- VOICE PICKER -->
+        <div style="margin-bottom:1.5rem">
+          <span class="avatar-section-label"><i class="ti ti-microphone" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i> Choose a personality voice</span>
+          <div class="voice-grid" id="voice-grid">
+            <div class="voice-opt picked" onclick="pickVoice(this,'The Friend','Warm, casual, uses everyday words. Feels like chatting with someone who genuinely cares.')">
+              <h4>😊 The Friend</h4><p>Warm, casual, and caring. Like texting a helpful buddy.</p>
+            </div>
+            <div class="voice-opt" onclick="pickVoice(this,'The Expert','Authoritative, precise, and informative. Speaks with confidence and depth.')">
+              <h4>🎓 The Expert</h4><p>Confident, detailed, and credible. People trust every word.</p>
+            </div>
+            <div class="voice-opt" onclick="pickVoice(this,'The Coach','Motivating and encouraging. Pushes users forward with energy and positivity.')">
+              <h4>💪 The Coach</h4><p>Energetic, motivating, and action-focused. Let's go!</p>
+            </div>
+            <div class="voice-opt" onclick="pickVoice(this,'The Concierge','Polished, formal, and elegant. Treats every user like a VIP guest.')">
+              <h4>🎩 The Concierge</h4><p>Refined, courteous, and premium. Pure white-glove service.</p>
+            </div>
+            <div class="voice-opt" onclick="pickVoice(this,'The Sidekick','Playful, fun, and witty. Sprinkles in humor while still being genuinely helpful.')">
+              <h4>🎉 The Sidekick</h4><p>Fun, light-hearted, and witty. Makes every chat enjoyable.</p>
+            </div>
+            <div class="voice-opt" onclick="pickVoice(this,'The Advisor','Calm, thoughtful, and measured. Takes time to understand before responding.')">
+              <h4>🧘 The Advisor</h4><p>Calm, wise, and reflective. Thinks before it speaks.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE PREVIEW -->
+        <div class="persona-preview" id="persona-preview">
+          <div class="preview-avatar" id="preview-emoji">🤖</div>
+          <div class="preview-info">
+            <h3 id="preview-name">Your Agent</h3>
+            <p id="preview-voice-desc">Warm, casual, uses everyday words. Feels like chatting with someone who genuinely cares.</p>
+            <div class="preview-badges">
+              <span class="preview-badge" id="preview-voice-badge">😊 The Friend</span>
+              <span class="preview-badge" id="preview-type-badge">Custom Agent</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" onclick="goStep(4)"><i class="ti ti-arrow-right"></i> Generate my agent prompt</button>
+          <button class="btn btn-save" onclick="saveAgent()"><i class="ti ti-device-floppy"></i> Save progress</button>
+          <button class="btn btn-ghost" onclick="goStep(2)"><i class="ti ti-arrow-left"></i> Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: RESULT -->
+    <div class="screen" id="s4">
+      <div class="card">
+        <!-- AGENT ID CARD -->
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)">
+          <div style="font-size:40px;width:60px;height:60px;background:var(--surface2);border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);flex-shrink:0" id="result-avatar">🤖</div>
+          <div>
+            <div class="badge-success" style="margin-bottom:6px"><i class="ti ti-check" style="font-size:13px"></i> Agent ready</div>
+            <div style="font-size:17px;font-weight:600;color:var(--text)" id="result-agent-name">Your Agent</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+              <span style="font-size:11px;padding:3px 10px;border-radius:999px;background:var(--pink-bg);color:var(--pink-text);border:1px solid var(--pink)" id="result-voice-tag">😊 The Friend</span>
+              <span style="font-size:11px;padding:3px 10px;border-radius:999px;background:var(--surface2);color:var(--text3);border:1px solid var(--border)" id="result-type-tag">Custom Agent</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-header">
+          <div class="result-label">System prompt</div>
+          <button class="copy-btn" onclick="copyIt()"><i class="ti ti-copy" style="font-size:14px"></i> Copy</button>
+        </div>
+        <div class="result-text" id="result-out"></div>
+        <div class="divider"></div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;gap:12px;align-items:flex-start">
+          <i class="ti ti-sparkles" style="font-size:18px;color:var(--accent-text);flex-shrink:0;margin-top:2px"></i>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Powered by Claude &amp; ChatGPT AI</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">This prompt was generated with the help of advanced AI models — the same technology used by leading companies worldwide. It was crafted through <strong style="color:var(--text)">AI Agent Studio</strong>, guided by coaching expertise to give you the best possible result. Always review and personalize it before use.</div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6"><strong style="color:var(--text)">How to use this:</strong> Copy the text above and paste it as the "System Prompt" inside any AI tool — ChatGPT, Claude, or any chatbot builder. Or send it to your email!</p>
+          <button class="btn btn-email" onclick="toggleEmailPanel()"><i class="ti ti-mail"></i> Send to my email</button>
+        </div>
+
+        <div class="email-panel" id="email-panel" style="display:none">
+          <div id="email-form-wrap">
+            <h3><i class="ti ti-mail" style="font-size:16px"></i> Send your prompt to your inbox</h3>
+            <p>Enter your details below. Your prompt will be emailed to you instantly — and we may reach out with tips and offers!</p>
+            <div class="email-name-row">
+              <input type="text" id="e-firstname" placeholder="First name" />
+              <input type="text" id="e-lastname" placeholder="Last name (optional)" />
+            </div>
+            <div class="email-row">
+              <input type="email" id="e-email" placeholder="Your email address" />
+              <button class="btn btn-email" onclick="sendEmail()" id="send-email-btn"><i class="ti ti-send"></i> Send it</button>
+            </div>
+            <p style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">By submitting you agree to receive occasional emails with AI tips and offers. You can unsubscribe anytime.</p>
+          </div>
+          <div class="email-sent" id="email-sent">
+            <div class="email-sent-icon"><i class="ti ti-circle-check"></i></div>
+            <h4>Check your inbox!</h4>
+            <p>Your agent prompt is on its way. Check your email — and your spam folder just in case.</p>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="actions">
+          <button class="btn btn-dl" onclick="downloadTxt()"><i class="ti ti-download"></i> Download as .txt</button>
+          <button class="btn btn-save" onclick="saveAgent()"><i class="ti ti-device-floppy"></i> Save this agent</button>
+          <button class="btn btn-ghost" onclick="showPage('gallery')"><i class="ti ti-layout-grid"></i> My agents</button>
+          <button class="btn btn-ghost" onclick="resetBuilder()"><i class="ti ti-refresh"></i> Start over</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="footer">
+    <strong>AI Agent Studio</strong> — helping coaches &amp; consultants build AI agents with ease.<br/>
+    <div class="footer-contact">
+      <span style="color:var(--text3)">Want a custom-built agent for your business?</span>
+      <a class="footer-contact-btn" onclick="showContact()"><i class="ti ti-message-circle" style="font-size:14px"></i> Work with me</a>
+    </div>
+    <div style="margin-top:14px;display:flex;justify-content:center;gap:20px;flex-wrap:wrap">
+      <a onclick="showLegal('disclaimer')" style="font-size:12px;color:var(--text3);cursor:pointer;transition:color 0.15s" onmouseover="this.style.color='var(--accent-text)'" onmouseout="this.style.color='var(--text3)'">Disclaimer</a>
+      <a onclick="showLegal('terms')" style="font-size:12px;color:var(--text3);cursor:pointer;transition:color 0.15s" onmouseover="this.style.color='var(--accent-text)'" onmouseout="this.style.color='var(--text3)'">Terms of Use</a>
+      <a onclick="showLegal('privacy')" style="font-size:12px;color:var(--text3);cursor:pointer;transition:color 0.15s" onmouseover="this.style.color='var(--accent-text)'" onmouseout="this.style.color='var(--text3)'">Privacy Policy</a>
+      <span style="font-size:12px;color:var(--text3)">&copy; 2025 AI Agent Studio. All rights reserved.</span>
+    </div>
+  </div>
+</div>
+
+<!-- LEGAL MODAL -->
+<div id="legal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:2rem;max-width:600px;width:100%;margin:auto;animation:fadeUp 0.3s ease both;position:relative">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+      <div style="display:flex;gap:10px">
+        <button onclick="showLegal('disclaimer')" id="tab-disclaimer" style="font-size:13px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--accent-bg);color:var(--accent-text);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:600">Disclaimer</button>
+        <button onclick="showLegal('terms')" id="tab-terms" style="font-size:13px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'Nunito',sans-serif">Terms of Use</button>
+        <button onclick="showLegal('privacy')" id="tab-privacy" style="font-size:13px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'Nunito',sans-serif">Privacy Policy</button>
+      </div>
+      <button onclick="hideLegal()" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;padding:0 4px">&times;</button>
+    </div>
+    <div id="legal-content" style="font-size:13px;color:var(--text2);line-height:1.9;max-height:65vh;overflow-y:auto;padding-right:4px"></div>
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.6">
+      <strong style="color:var(--text3)">Note:</strong> These documents were generated for informational purposes. AI Agent Studio recommends consulting a licensed attorney for advice specific to your situation.
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div id="contact-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:2rem;max-width:440px;width:100%;animation:fadeUp 0.3s ease both">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:48px;height:48px;background:var(--accent-bg);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid var(--accent);flex-shrink:0"><i class="ti ti-school" style="font-size:24px;color:var(--accent-text)"></i></div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">Work with me</div>
+          <div style="font-size:12px;color:var(--text3)">AI Agent Studio</div>
+        </div>
+      </div>
+      <button onclick="hideContact()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">&times;</button>
+    </div>
+    <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:1.25rem">Hi! I'm a coach and consultant who helps businesses build AI agents and automation. If you want a <strong style="color:var(--accent-text)">custom AI agent</strong> built for your business, or need help getting started — I'd love to chat!</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem">
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <i class="ti ti-check" style="color:var(--success);font-size:16px"></i>
+        <span style="font-size:13px;color:var(--text2)">Custom AI agent design &amp; setup</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <i class="ti ti-check" style="color:var(--success);font-size:16px"></i>
+        <span style="font-size:13px;color:var(--text2)">1-on-1 coaching sessions on AI tools</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <i class="ti ti-check" style="color:var(--success);font-size:16px"></i>
+        <span style="font-size:13px;color:var(--text2)">Done-for-you AI automation for your business</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="contactByEmail()"><i class="ti ti-mail"></i> Email me</button>
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="hideContact()">Maybe later</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const FORMSPREE = 'https://formspree.io/f/mqejgzgv';
+  let chosenTemplate = 'custom';
+  let editingKey = null;
+  let chosenAvatar = '🤖';
+  let chosenAvatarLabel = 'Robot';
+  let chosenVoice = 'The Friend';
+  let chosenVoiceDesc = 'Warm, casual, uses everyday words. Feels like chatting with someone who genuinely cares.';
+
+  const typeLabels = { customer:'Customer Support Agent', sales:'Sales Assistant Agent', twin:'AI Twin Agent', research:'Research Agent', coach:'Coach & Mentor Agent', custom:'Custom AI Agent' };
+  const typeIcons  = { customer:'ti-headset', sales:'ti-chart-bar', twin:'ti-user-circle', research:'ti-search', coach:'ti-star', custom:'ti-plus' };
+
+  function showPage(page) {
+    document.getElementById('page-builder').classList.toggle('on', page==='builder');
+    document.getElementById('page-gallery').classList.toggle('on', page==='gallery');
+    document.getElementById('nav-builder').classList.toggle('active', page==='builder');
+    document.getElementById('nav-gallery').classList.toggle('active', page==='gallery');
+    if (page==='gallery') renderGallery();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function pickTemplate(el, type) {
+    document.querySelectorAll('.tmpl').forEach(c=>c.classList.remove('picked'));
+    el.classList.add('picked'); chosenTemplate=type;
+  }
+
+  function pickAvatar(el, emoji, label) {
+    document.querySelectorAll('.avatar-opt').forEach(c=>c.classList.remove('picked'));
+    el.classList.add('picked'); chosenAvatar=emoji; chosenAvatarLabel=label;
+    updatePreview();
+  }
+
+  function pickVoice(el, name, desc) {
+    document.querySelectorAll('.voice-opt').forEach(c=>c.classList.remove('picked'));
+    el.classList.add('picked'); chosenVoice=name; chosenVoiceDesc=desc;
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const name = v('f-name') || 'Your Agent';
+    document.getElementById('preview-emoji').textContent = chosenAvatar;
+    document.getElementById('preview-name').textContent = name;
+    document.getElementById('preview-voice-desc').textContent = chosenVoiceDesc;
+    document.getElementById('preview-voice-badge').textContent = document.querySelector('.voice-opt.picked h4')?.textContent || chosenVoice;
+    document.getElementById('preview-type-badge').textContent = typeLabels[chosenTemplate] || 'Custom Agent';
+  }
+
+  function tog(el) { el.classList.toggle('on'); autoSaveDraft(); }
+  function chips(id) { return [...document.querySelectorAll('#'+id+' .chip.on')].map(c=>c.textContent.trim()).join(', '); }
+  function v(id) { return (document.getElementById(id)||{}).value?.trim()||''; }
+
+  function setDot(n) {
+    [1,2,3,4].forEach(i=>{
+      const d=document.getElementById('dot'+i);
+      d.classList.remove('active','done');
+      if(i<n) d.classList.add('done');
+      if(i===n) d.classList.add('active');
+    });
+  }
+
+  function goStep(n) {
+    if(n===4) buildPrompt();
+    [1,2,3,4].forEach(i=>document.getElementById('s'+i).classList.remove('on'));
+    document.getElementById('s'+n).classList.add('on');
+    setDot(n);
+    window.scrollTo({top:0,behavior:'smooth'});
+    if(n!==4){document.getElementById('email-panel').style.display='none';}
+    if(n===3) setTimeout(updatePreview,50);
+  }
+
+  function resetBuilder() {
+    editingKey=null; chosenTemplate='custom'; chosenAvatar='🤖'; chosenAvatarLabel='Robot';
+    chosenVoice='The Friend'; chosenVoiceDesc='Warm, casual, uses everyday words. Feels like chatting with someone who genuinely cares.';
+    document.querySelectorAll('.tmpl').forEach(c=>c.classList.remove('picked'));
+    document.querySelectorAll('.avatar-opt').forEach((c,i)=>c.classList.toggle('picked',i===0));
+    document.querySelectorAll('.voice-opt').forEach((c,i)=>c.classList.toggle('picked',i===0));
+    ['f-name','f-brand','f-audience','f-limits','f-extra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('f-platform').value='Website';
+    document.querySelectorAll('#skills-chips .chip').forEach(c=>c.classList.remove('on'));
+    document.querySelectorAll('#tone-chips .chip').forEach(c=>{c.classList.remove('on');if(c.textContent.trim()==='Friendly')c.classList.add('on');});
+    document.getElementById('email-panel').style.display='none';
+    document.getElementById('email-form-wrap').style.display='block';
+    document.getElementById('email-sent').classList.remove('show');
+    ['e-firstname','e-lastname','e-email'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    goStep(1); showPage('builder');
+  }
+
+  function buildPrompt() {
+    const name=v('f-name')||'Your AI Agent';
+    const brand=v('f-brand')||'our business';
+    const audience=v('f-audience')||'customers and users';
+    const platform=v('f-platform')||'our platform';
+    const skills=chips('skills-chips')||'answer questions and assist users';
+    const tone=chips('tone-chips')||'friendly and helpful';
+    const limits=v('f-limits'); const extra=v('f-extra');
+    const type=typeLabels[chosenTemplate]||'AI Agent';
+    const limitLines=limits?limits.split(',').map(l=>'- '+l.trim()).join('\n'):'- Never make promises you cannot keep\n- Never share private or sensitive information\n- Never pretend to be a human if someone sincerely asks';
+    const skillLines=skills.split(',').map(s=>'- '+s.trim()).join('\n');
+    const voiceGuide = {
+      'The Friend':'You speak like a warm, caring friend — casual language, contractions are fine, never stiff or robotic. Make people feel at ease immediately.',
+      'The Expert':'You speak with authority and precision. You are knowledgeable, credible, and detailed. People trust your answers completely.',
+      'The Coach':'You are energetic and motivating. You push people forward with positivity, action words, and encouragement. Every reply ends with momentum.',
+      'The Concierge':'You are polished, refined, and elegant. You treat every person like a VIP. Formal but never cold — warm professionalism at its finest.',
+      'The Sidekick':'You are playful, witty, and fun. You bring a smile to every reply while still being genuinely helpful. Light-hearted but never unprofessional.',
+      'The Advisor':'You are calm, measured, and thoughtful. You listen carefully before responding. People feel truly heard and understood when they talk to you.'
+    };
+    const prompt=`# System Prompt — ${name}\n## Agent type: ${type} | Created for: ${brand}\n## Avatar: ${chosenAvatar} ${chosenAvatarLabel} | Personality: ${chosenVoice}\n\n---\n\n## Who you are\nYou are ${name}, an AI agent created by ${brand}. Your job is to serve ${audience} on ${platform} — making every interaction feel easy, helpful, and human.\n\nYou are not a generic AI assistant. You represent ${brand}, and everything you say should feel like it comes from a trusted, knowledgeable member of the team.\n\n## Your personality & voice\nYour personality style is: ${chosenVoice}.\n${voiceGuide[chosenVoice]||chosenVoiceDesc}\n\nOverall tone: ${tone}.\n\n## Your skills & responsibilities\n${skillLines}\n\n## How you communicate\n- Keep your answers clear and easy to understand — avoid complicated words or jargon.\n- Match the length of your reply to the question: short questions get short answers, detailed questions get detailed help.\n- Always be respectful, patient, and kind — never make the person feel bad for asking.\n- Use the person's name if you know it.\n- End each reply by checking if there is anything else you can help with.\n\n## What you must never do\n${limitLines}\n\n## When you do not know the answer\nBe honest. Say: "That is a great question — let me connect you with the right person who can help." Then guide them to contact ${brand} directly.\n\nNever guess or make up information. Accuracy and trust matter more than speed.\n${extra?'\n## About '+brand+'\n'+extra+'\n':''}\n---\n\nRemember: Every person who talks to you deserves a great experience. You are often the first impression of ${brand}. Be ${chosenVoice==='The Friend'?'warm and human':chosenVoice==='The Expert'?'knowledgeable and credible':chosenVoice==='The Coach'?'energetic and motivating':chosenVoice==='The Concierge'?'polished and refined':chosenVoice==='The Sidekick'?'fun and helpful':'calm and thoughtful'}. Make it count.`;
+    document.getElementById('result-out').textContent=prompt;
+    // Update result identity card
+    document.getElementById('result-avatar').textContent=chosenAvatar;
+    document.getElementById('result-agent-name').textContent=name;
+    const voiceEl=document.querySelector('.voice-opt.picked h4');
+    document.getElementById('result-voice-tag').textContent=voiceEl?voiceEl.textContent:chosenVoice;
+    document.getElementById('result-type-tag').textContent=type;
+  }
+
+  function copyIt() {
+    const t=document.getElementById('result-out').textContent;
+    navigator.clipboard.writeText(t).then(()=>{
+      const b=document.querySelector('.copy-btn'); const orig=b.innerHTML;
+      b.innerHTML='<i class="ti ti-check" style="font-size:14px"></i> Copied!';
+      b.style.color='var(--success-text)'; b.style.borderColor='var(--success)';
+      setTimeout(()=>{b.innerHTML=orig;b.style.color='';b.style.borderColor='';},2000);
+    });
+  }
+
+  function downloadTxt() {
+    const text=document.getElementById('result-out').textContent;
+    const name=(document.getElementById('f-name').value.trim()||'my-agent').toLowerCase().replace(/\s+/g,'-');
+    const blob=new Blob([text],{type:'text/plain'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name+'-prompt.txt'; a.click();
+  }
+
+  function toggleEmailPanel() {
+    const p=document.getElementById('email-panel');
+    const hidden=p.style.display==='none'||p.style.display==='';
+    p.style.display=hidden?'block':'none';
+    if(hidden) p.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  async function sendEmail() {
+    const firstName=v('e-firstname'); const lastName=v('e-lastname'); const email=v('e-email');
+    const prompt=document.getElementById('result-out').textContent;
+    const agentName=v('f-name')||'Your AI Agent'; const brand=v('f-brand')||'your business';
+    if(!firstName){showToast('','Please enter your first name.');return;}
+    if(!email||!email.includes('@')){showToast('','Please enter a valid email address.');return;}
+    const btn=document.getElementById('send-email-btn');
+    btn.innerHTML='<i class="ti ti-loader"></i> Sending...'; btn.disabled=true;    try {
+      const res=await fetch(FORMSPREE,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({_subject:`New AI Agent: ${agentName} (${chosenAvatar} ${chosenVoice}) — ${brand}`,name:`${firstName} ${lastName}`.trim(),email,agent_name:agentName,business:brand,agent_type:typeLabels[chosenTemplate]||'Custom',avatar:`${chosenAvatar} ${chosenAvatarLabel}`,voice:chosenVoice,platform:document.getElementById('f-platform').value,message:`Hi ${firstName}!\n\nHere is your AI Agent prompt for "${agentName}" (${chosenAvatar} ${chosenVoice}).\n\nCopy and paste this into any AI tool as the System Prompt:\n\n---\n\n${prompt}\n\n---\n\nThank you for using AI Agent Generator Studio!`})});
+      if(res.ok){document.getElementById('email-form-wrap').style.display='none';document.getElementById('email-sent').classList.add('show');showToast('success','✓ Prompt sent to your email!');}
+      else throw new Error('fail');
+    } catch(e){showToast('','Something went wrong. Please try again.');btn.innerHTML='<i class="ti ti-send"></i> Send it';btn.disabled=false;}
+  }
+
+  function getFormData() {
+    return {template:chosenTemplate,name:v('f-name'),brand:v('f-brand'),audience:v('f-audience'),platform:document.getElementById('f-platform').value,
+      skills:[...document.querySelectorAll('#skills-chips .chip.on')].map(c=>c.textContent.trim()),
+      tone:[...document.querySelectorAll('#tone-chips .chip.on')].map(c=>c.textContent.trim()),
+      limits:v('f-limits'),extra:v('f-extra'),avatar:chosenAvatar,avatarLabel:chosenAvatarLabel,voice:chosenVoice,voiceDesc:chosenVoiceDesc,
+      savedAt:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})};
+  }
+
+  function loadFormData(data) {
+    chosenTemplate=data.template||'custom';
+    document.querySelectorAll('.tmpl').forEach(el=>el.classList.remove('picked'));
+    const tmplMap=['customer','sales','twin','research','coach','custom'];
+    const idx=tmplMap.indexOf(chosenTemplate); if(idx>=0) document.querySelectorAll('.tmpl')[idx]?.classList.add('picked');
+    if(data.name) document.getElementById('f-name').value=data.name;
+    if(data.brand) document.getElementById('f-brand').value=data.brand;
+    if(data.audience) document.getElementById('f-audience').value=data.audience;
+    if(data.platform) document.getElementById('f-platform').value=data.platform;
+    if(data.limits) document.getElementById('f-limits').value=data.limits;
+    if(data.extra) document.getElementById('f-extra').value=data.extra;
+    document.querySelectorAll('#skills-chips .chip').forEach(c=>c.classList.toggle('on',(data.skills||[]).includes(c.textContent.trim())));
+    document.querySelectorAll('#tone-chips .chip').forEach(c=>c.classList.toggle('on',(data.tone||[]).includes(c.textContent.trim())));
+    if(data.avatar){chosenAvatar=data.avatar;chosenAvatarLabel=data.avatarLabel||'';}
+    if(data.voice){chosenVoice=data.voice;chosenVoiceDesc=data.voiceDesc||'';}
+    // restore avatar & voice UI selections
+    document.querySelectorAll('.avatar-opt').forEach(el=>{
+      const em=el.querySelector('.av-emoji')?.textContent; el.classList.toggle('picked',em===chosenAvatar);
+    });
+    document.querySelectorAll('.voice-opt').forEach(el=>{
+      const h=el.querySelector('h4')?.textContent||''; el.classList.toggle('picked',h.includes(chosenVoice));
+    });
+  }
+
+  function saveAgent() {
+    const data=getFormData(); const agentName=data.name||'Unnamed Agent';
+    const saved=JSON.parse(localStorage.getItem('saved_agents')||'{}');
+    const key=editingKey||('agent_'+Date.now());
+    const existingKey=!editingKey&&Object.keys(saved).find(k=>saved[k].name===agentName);
+    const finalKey=existingKey||key; saved[finalKey]={...data,name:agentName};
+    localStorage.setItem('saved_agents',JSON.stringify(saved)); editingKey=finalKey;
+    showToast('success','✓ Agent saved to My Agents!'); flashSavedBadge(); updateAgentCount();
+  }
+
+  function autoSaveDraft(){localStorage.setItem('agent_draft',JSON.stringify(getFormData()));}
+  function loadDraft(){const d=localStorage.getItem('agent_draft');if(d){try{loadFormData(JSON.parse(d));}catch(e){}}}
+
+  function deleteAgent(key){
+    const saved=JSON.parse(localStorage.getItem('saved_agents')||'{}'); delete saved[key];
+    localStorage.setItem('saved_agents',JSON.stringify(saved)); renderGallery(); updateAgentCount(); showToast('','Agent deleted.');
+  }
+  function loadAgent(key){
+    const saved=JSON.parse(localStorage.getItem('saved_agents')||'{}');
+    if(saved[key]){editingKey=key;loadFormData(saved[key]);showPage('builder');goStep(2);showToast('success','✓ Agent loaded — continue editing!');}
+  }
+  function viewAgent(key){
+    const saved=JSON.parse(localStorage.getItem('saved_agents')||'{}');
+    if(saved[key]){editingKey=key;loadFormData(saved[key]);showPage('builder');goStep(4);}
+  }
+
+  function renderGallery() {
+    const saved=JSON.parse(localStorage.getItem('saved_agents')||'{}'); const keys=Object.keys(saved);
+    const el=document.getElementById('gallery-content');
+    if(keys.length===0){
+      el.innerHTML=`<div class="empty-state"><div class="empty-icon"><i class="ti ti-robot"></i></div><h3>No agents yet</h3><p>You have not built any agents yet.<br>Click the button below to create your first one!</p><button class="btn btn-primary" onclick="showPage('builder'); resetBuilder();"><i class="ti ti-plus"></i> Build my first agent</button></div>`;
+      return;
+    }
+    el.innerHTML=`<div class="gallery-grid">${keys.map(k=>{
+      const a=saved[k]; const icon=typeIcons[a.template]||'ti-robot'; const label=typeLabels[a.template]||'Custom Agent';
+      const av=a.avatar||'🤖'; const voice=a.voice||'';
+      return `<div class="agent-card">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="agent-avatar-lg" style="background:var(--surface2);border:1px solid var(--border)">${av}</div>
+          <div><div class="agent-card-name">${a.name||'Unnamed Agent'}</div><div class="agent-card-type">${label}</div></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <div class="agent-card-platform"><i class="ti ti-device-desktop" style="font-size:11px"></i> ${a.platform||'Website'}</div>
+          ${voice?`<div class="voice-pill"><i class="ti ti-microphone" style="font-size:11px"></i> ${voice}</div>`:''}
+        </div>
+        <div class="agent-card-meta"><i class="ti ti-clock" style="font-size:12px"></i> Saved ${a.savedAt||'recently'}</div>
+        <div class="agent-card-actions">
+          <button class="btn-xs accent" onclick="viewAgent('${k}')"><i class="ti ti-eye" style="font-size:12px"></i> View</button>
+          <button class="btn-xs" onclick="loadAgent('${k}')"><i class="ti ti-edit" style="font-size:12px"></i> Edit</button>
+          <button class="btn-xs danger" onclick="deleteAgent('${k}')"><i class="ti ti-trash" style="font-size:12px"></i></button>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  function updateAgentCount(){
+    const saved=JSON.parse(localStorage.getItem('saved_agents')||'{}'); const count=Object.keys(saved).length;
+    const badge=document.getElementById('agent-count-badge'); badge.textContent=count; badge.style.display=count>0?'inline':'none';
+  }
+  function flashSavedBadge(){const b=document.getElementById('saved-badge');b.classList.add('show');setTimeout(()=>b.classList.remove('show'),3000);}
+  function showToast(type,msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type?' '+type:'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+  /* ── LEGAL ── */
+  const legalContent = {
+    disclaimer: `<h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">Disclaimer</h3>
+<p style="font-size:11px;color:var(--text3);margin-bottom:1.25rem">Last updated: January 1, 2025 &nbsp;|&nbsp; AI Agent Studio &nbsp;|&nbsp; United States</p>
+<p style="margin-bottom:1rem">The information and tools provided by <strong style="color:var(--text)">AI Agent Studio</strong> ("we," "us," or "our") are intended for general educational and informational purposes only. Nothing on this platform constitutes professional legal, financial, medical, or business advice.</p>
+<p style="margin-bottom:1rem"><strong style="color:var(--text)">No Warranties.</strong> AI Agent Studio provides this tool on an "as is" and "as available" basis without any warranties of any kind, either express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.</p>
+<p style="margin-bottom:1rem"><strong style="color:var(--text)">AI-Generated Content.</strong> The prompts and outputs generated by this tool are created with the assistance of artificial intelligence. We do not guarantee the accuracy, completeness, reliability, or suitability of any AI-generated content. You are solely responsible for reviewing, testing, and using any output from this tool.</p>
+<p style="margin-bottom:1rem"><strong style="color:var(--text)">No Liability.</strong> To the fullest extent permitted by applicable law, AI Agent Studio shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from your use of, or inability to use, this platform or any content generated through it.</p>
+<p style="margin-bottom:1rem"><strong style="color:var(--text)">External Tools.</strong> When you use the prompts generated here in third-party platforms (such as ChatGPT, Claude, or other AI tools), those platforms are governed by their own terms and policies. AI Agent Studio is not responsible for how those platforms handle your data or inputs.</p>
+<p>By using AI Agent Studio, you acknowledge and agree to this disclaimer in full.</p>`,
+
+    terms: `<h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">Terms of Use</h3>
+<p style="font-size:11px;color:var(--text3);margin-bottom:1.25rem">Last updated: January 1, 2025 &nbsp;|&nbsp; AI Agent Studio &nbsp;|&nbsp; United States</p>
+<p style="margin-bottom:1rem">Please read these Terms of Use carefully before using AI Agent Studio. By accessing or using this platform, you agree to be bound by these terms.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">1. Acceptance of Terms</strong><br/>By using this platform, you confirm that you are at least 18 years of age and legally capable of entering into a binding agreement. If you do not agree with any part of these terms, you must not use this platform.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">2. Use of the Platform</strong><br/>You may use AI Agent Studio solely for lawful purposes and in accordance with these terms. You agree not to use this platform to generate content that is harmful, deceptive, discriminatory, or in violation of any applicable law or regulation.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">3. Intellectual Property</strong><br/>The design, layout, branding, and original content of AI Agent Studio are owned by AI Agent Studio and protected by applicable intellectual property laws. The AI-generated prompts you create are yours to use for personal or commercial purposes.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">4. Email & Communications</strong><br/>By submitting your email address through this platform, you consent to receiving occasional communications from AI Agent Studio including tips, updates, and offers. You may opt out at any time by following the unsubscribe instructions in any email we send.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">5. Limitation of Liability</strong><br/>AI Agent Studio shall not be liable for any damages or losses resulting from your use of the platform or any content generated through it. Your use is entirely at your own risk.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">6. Modifications</strong><br/>We reserve the right to modify these terms at any time. Continued use of the platform after changes constitutes your acceptance of the updated terms.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">7. Governing Law</strong><br/>These terms shall be governed by and construed in accordance with the laws of the United States, without regard to its conflict of law provisions.</p>
+<p>If you have any questions about these terms, please contact us directly.</p>`,
+
+    privacy: `<h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">Privacy Policy</h3>
+<p style="font-size:11px;color:var(--text3);margin-bottom:1.25rem">Last updated: January 1, 2025 &nbsp;|&nbsp; AI Agent Studio &nbsp;|&nbsp; United States</p>
+<p style="margin-bottom:1rem">AI Agent Studio ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains what information we collect, how we use it, and your rights regarding that information.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">1. Information We Collect</strong><br/>When you voluntarily submit your name and email address through our email form, we collect and store that information. We also collect the details of the AI agent you built (agent name, business name, type, platform) so we can provide you with a relevant response.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">2. How We Use Your Information</strong><br/>We use your information to: (a) send you the AI agent prompt you requested; (b) send you occasional educational content, tips, and offers related to AI tools and coaching; and (c) improve our platform and services. We will never sell your personal information to third parties.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">3. Data Storage</strong><br/>Your saved agents and draft data are stored locally in your browser using localStorage. This data never leaves your device unless you choose to email your prompt to yourself. Email submissions are processed through Formspree, a third-party service with its own privacy policy.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">4. Cookies & Tracking</strong><br/>AI Agent Studio does not use tracking cookies or third-party analytics. We do not track your behavior across other websites.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">5. Your Rights</strong><br/>You have the right to: request access to the personal data we hold about you; request deletion of your data; and opt out of marketing communications at any time by clicking "unsubscribe" in any email we send.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">6. Children's Privacy</strong><br/>This platform is not intended for use by individuals under the age of 18. We do not knowingly collect personal information from children.</p>
+<p style="margin-bottom:0.75rem"><strong style="color:var(--text)">7. Changes to This Policy</strong><br/>We may update this Privacy Policy from time to time. We will notify users of any significant changes by updating the date at the top of this page.</p>
+<p>For any privacy-related questions or requests, please contact us directly.</p>`
+  };
+
+  function showLegal(section) {
+    const overlay = document.getElementById('legal-overlay');
+    overlay.style.display = 'flex';
+    document.getElementById('legal-content').innerHTML = legalContent[section] || '';
+    ['disclaimer','terms','privacy'].forEach(s => {
+      const tab = document.getElementById('tab-' + s);
+      if (tab) {
+        tab.style.background = s === section ? 'var(--accent-bg)' : 'transparent';
+        tab.style.color = s === section ? 'var(--accent-text)' : 'var(--text2)';
+        tab.style.borderColor = s === section ? 'var(--accent)' : 'var(--border2)';
+        tab.style.fontWeight = s === section ? '600' : '400';
+      }
+    });
+    overlay.scrollTop = 0;
+  }
+
+  function hideLegal() {
+    document.getElementById('legal-overlay').style.display = 'none';
+  }
+
+  function showContact() {
+    const overlay = document.getElementById('contact-overlay');
+    overlay.style.display = 'flex';
+  }
+  function hideContact() {
+    document.getElementById('contact-overlay').style.display = 'none';
+  }
+  function contactByEmail() {
+    window.location.href = 'mailto:hello@aiagent.studio?subject=I want to work with you!&body=Hi! I just built an AI agent using your studio and would love to learn more about working together.';
+    hideContact();
+  }
+
+  /* ── PASSWORD ── */
+  const PASSWORD = 'teachertoceo';
+
+  function checkPassword() {
+    const input = document.getElementById('lock-input').value.trim();
+    const errorEl = document.getElementById('lock-error');
+    const inputEl = document.getElementById('lock-input');
+    if (input === PASSWORD) {
+      sessionStorage.setItem('ais_unlocked', '1');
+      const screen = document.getElementById('lock-screen');
+      screen.style.opacity = '0';
+      screen.style.transition = 'opacity 0.4s ease';
+      setTimeout(() => screen.style.display = 'none', 400);
+    } else {
+      errorEl.textContent = 'Incorrect password. Please try again.';
+      inputEl.classList.add('error');
+      inputEl.value = '';
+      setTimeout(() => inputEl.classList.remove('error'), 600);
+    }
+  }
+
+  function toggleLockVisibility() {
+    const input = document.getElementById('lock-input');
+    const icon = document.getElementById('lock-eye-icon');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'ti ti-eye-off';
+    } else {
+      input.type = 'password';
+      icon.className = 'ti ti-eye';
+    }
+  }
+
+  window.addEventListener('load', () => {
+    // Check if already unlocked this session
+    if (sessionStorage.getItem('ais_unlocked') === '1') {
+      document.getElementById('lock-screen').style.display = 'none';
+    }
+    loadDraft();
+    updateAgentCount();
+  });
+</script>
+</body>
+</html>
